@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Environment;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.oscim.android.MapPreferences;
 import org.oscim.android.MapView;
@@ -36,37 +37,15 @@ public class MainView extends View {
     MapPreferences mPrefs;
     private DefaultMapScaleBar mMapScaleBar;
     MapPosition mPos = new MapPosition();
+    MainActivity _activity;
 
-
-    public class Invalidator implements Runnable {
-        public void stop() {
-            MainView.this.removeCallbacks(this);
-        }
-
-        public void reschedule() {
-            stop();
-            schedule();
-        }
-
-        private void schedule() {
-            MainView.this.postDelayed(this, _renderRepaintIntervalMS - (System.currentTimeMillis() % _renderRepaintIntervalMS));
-        }
-
-        @Override
-        public void run() {
-            schedule();
-            MainView.this.invalidate();
-        }
-    }
-
-    public Invalidator invalidator;
     Paint p;
 
     public MainView(MainActivity activity) {
         super(activity);
+        _activity = activity;
         setId(R.id.mainViewReservedId);
         setFocusable(true);
-        invalidator = new Invalidator();
         p = new Paint();
         p.setColor(Color.RED);
 
@@ -80,7 +59,7 @@ public class MainView extends View {
 
         MapFileTileSource tileSource = new MapFileTileSource();
         tileSource.setPreferredLanguage("en");
-        String file = Environment.getExternalStorageDirectory() + "/germany.map";
+        String file = Environment.getExternalStorageDirectory() + "/XCTrack/Map/czech_republic.map";
         if (tileSource.setMapFile(file)) {
 
             VectorTileLayer l = mMap.setBaseMap(tileSource);
@@ -105,32 +84,29 @@ public class MainView extends View {
             mPos.setByBoundingBox(info.boundingBox, Tile.SIZE * 4, Tile.SIZE * 4);
             mMap.setMapPosition(mPos);
         }
+//        activity.addContentView(mMapView, new ViewGroup.LayoutParams(400, 400));
+        mMapView.setZOrderOnTop(false);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        int widthSpec = View.MeasureSpec.makeMeasureSpec(400, View.MeasureSpec.EXACTLY);
-        int heightSpec = View.MeasureSpec.makeMeasureSpec(400, View.MeasureSpec.EXACTLY);
-
-        mMapView.measure(widthSpec, heightSpec);
-
-//        mMapView.layout(0, 0, x2-x1, y2-y1);
-        mMapView.layout(0, 0, 400, 400);
-        try {
-            canvas.save();
-
-            canvas.clipRect(200, 200, 600, 600);
-            canvas.translate(200, 200);
-            mMapView.draw(canvas);
-
-        } finally {
-            canvas.restore();
-        }
+//        int widthSpec = View.MeasureSpec.makeMeasureSpec(400, View.MeasureSpec.EXACTLY);
+//        int heightSpec = View.MeasureSpec.makeMeasureSpec(400, View.MeasureSpec.EXACTLY);
+//        mMapView.measure(widthSpec, heightSpec);
+//        mMapView.layout(0, 0, 400, 400);
+//        try {
+//            canvas.save();
+//
+//            canvas.clipRect(200, 200, 600, 600);
+//            canvas.translate(200, 200);
+//            mMapView.draw(canvas);
+//
+//        } finally {
+//            canvas.restore();
+//        }
         canvas.drawRect(20, 20, 100, 100 + 100 * ((System.currentTimeMillis() / _renderRepaintIntervalMS) % 2), p);
-
-        invalidator.reschedule();
     }
 
     protected void onResume() {
